@@ -1,54 +1,34 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+rm(list=ls())
 
-```{r}
-echo = TRUE    # Always make code visible
-options(scipen = 1) # Turn off scientific notations for numbers
-```
+setwd('C:/Users/YuBo/Dropbox/Data_Science/Reproducible_Research/RepData_PeerAssessment1')
 
-## Loading and preprocessing the data
-```{r}
 data = read.csv("activity.csv")
-```
 
-## What is mean total number of steps taken per day?
-```{r}
+
+#########################################################################################
 library(ggplot2)
 total.steps = tapply(data$steps,data$date, FUN = sum, na.rm = TRUE)
 qplot(total.steps, binwidth = 1000, xlab = "total number of steps taken each day")
 mean(total.steps, na.rm = TRUE)
 median(total.steps, na.rm = TRUE)
-```
 
-## What is the average daily activity pattern?
-```{r}
+#########################################################################################
 library(ggplot2)
 averages = aggregate(x = list(steps = data$steps), by = list(interval=data$interval), FUN = mean, na.rm = TRUE)
 ggplot(data  = averages, aes(x = interval, y = steps)) + 
     geom_line() +
     xlab("5 - minute interval") + 
     ylab("average number of steps taken")
-```
 
-On average across all the days in the dataset, the 5-minute interval contains the maximum number of steps
-```{r}
+##########################################################################################
 averages[which.max(averages$steps),]
-```
 
-Inputing missing values
-
-There are many spots with missing value, denoted as NA. 
-```{r}
+###########   How many missing   #########################################################
 missing = is.na(data$steps)
 table(missing)
-```
 
-Then all of the missing value are replaced by mean value of the 5 minute interval
-```{r}
+##########################################################################################
+# Replace all missing value with the mean value of its 5-min interval
 fill.value = function(steps, interval){
   filled = NA
   if (!is.na(steps))
@@ -59,23 +39,15 @@ fill.value = function(steps, interval){
 filled.data = data
 filled.data$steps = mapply(fill.value, filled.data$steps, filled.data$interval)
 
-```
+##########################################################################################
 
-use the filled data set, make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps
-
-```{r}
 total.steps = tapply(filled.data$steps, filled.data$date, FUN = sum)
 qplot(total.steps, binwidth = 1000, xlab = "Total number of steps taken each day")
 mean(total.steps)
 median(total.steps)
 
-```
+#########################################################################################
 
-## Are there differences in activity patterns between weekdays and weekends?
-
-Use the dataset with the filled-in values, find the day of the week for each measurement in the dataset
-
-```{r}
 weekday.or.weekend = function(date){
   day = weekdays(date)
   if (day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday"))
@@ -88,16 +60,23 @@ weekday.or.weekend = function(date){
 
 filled.data$date = as.Date(filled.data$date)
 filled.data$day = sapply(filled.data$date, FUN = weekday.or.weekend)
-```
 
+##########################################################################################
 
-make a panel plot containing plots of average number of steps taken on weekdays and weekends.
-
-```{r}
 averages = aggregate(steps ~ interval + day, data = filled.data, mean)
 ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) + 
     xlab("5 - minute interval") + ylab("Number of steps")
-```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
